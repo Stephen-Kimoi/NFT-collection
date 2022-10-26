@@ -1,31 +1,29 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
-const hre = require("hardhat");
+const { ethers } = require("hardhat"); 
+require("dotenv").config({ path: ".env"}); 
+const { WHITELIST_CONTRACT_ADDRESS, METADATA_URL} = require('../constants'); 
 
-async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  const lockedAmount = hre.ethers.utils.parseEther("1");
+const main = async () => {
+  const whitelistContract = WHITELIST_CONTRACT_ADDRESS; // Address of the whitelist contract that we had deployed
+  const metadataUrl = METADATA_URL; // URL where we can extract data of Crypto Dev NFT
+  const cryptoDevsContract = await ethers.getContractFactory("CryptoDevs"); 
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const deployedDevsContract = await cryptoDevsContract.deploy(
+    metadataUrl, 
+    whitelistContract
+  ); 
 
-  await lock.deployed();
+  // Print the address of the new deployed contract
+  console.log("CryptoDevs contract address: ", deployedDevsContract.address); 
 
-  console.log(
-    `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+const runMain = async () => {
+  try {
+    main(); 
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+runMain(); 
