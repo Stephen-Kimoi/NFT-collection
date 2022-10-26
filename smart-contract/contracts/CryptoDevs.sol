@@ -70,8 +70,8 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
     } 
 
     // Function to recieve ether
-    recieve() external payable {}
+    receive() external payable {}
 
     // Fallback function, called when msg.data is empty
-    fallBack() external payable {}
+    fallback() external payable {}
 }
