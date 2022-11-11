@@ -7,14 +7,15 @@ import "./IWhitelist.sol";
 
 contract CryptoDevs is ERC721Enumerable, Ownable {
     string _baseTokenURI; // 
-    uint256 public _price = 0.01 ether; 
-    bool public _paused; 
-    uint256 public maxTokenIds = 20; 
-    uint256 public tokenIds; 
-    IWhitelist whitelist; 
-    bool public presaleStarted; 
-    uint256 public presaleEnded; 
-
+    uint256 public _price = 0.01 ether; // Price of one Crypto Dev NFT 
+    bool public _paused; // For pausing the smart contract incase of an emergency 
+    uint256 public maxTokenIds = 20; // Maximum numbe of Crypto Devs NFTs 
+    uint256 public tokenIds; // Total number of token IDs minted 
+    IWhitelist whitelist; // Whitelist contract instance 
+    bool public presaleStarted; // Boolean to keep track of whether presale started or not 
+    uint256 public presaleEnded; // Timestamp for when presale ended
+    
+    // The purpose of the modifier is to ensure that this partcular condition is met
     modifier onlyWhenNotPaused {
         require(!_paused, "Contract currently paused"); 
         _;
@@ -38,7 +39,8 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
         require(tokenIds < maxTokenIds, "Exeeded maximum Crypto Devs supply"); 
         require(msg.value >= _price, "Ether sent is not correct"); 
         tokenIds += 1; 
-        _safeMint(msg.sender, tokenIds);
+        _safeMint(msg.sender, tokenIds); // Ensures that you are sending minted tokens to a contract that is able to handle NFTs 
+        // Prevents tokens being lost 
     }
 
     // mint - allows users to mint only 1 NFT per transaction after the presale has ended 
