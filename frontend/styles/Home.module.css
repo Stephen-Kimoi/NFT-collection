@@ -43,6 +43,23 @@
   cursor: pointer;
   margin-bottom: 2%;
 }
+
+.errorDiv, .successDiv {
+  width: 60%; 
+  height: 20vh;
+  color: #eaeaea; 
+  font-size: 2rem; 
+  text-align: center;
+}
+
+.errorDiv {
+  background-color: #d68b8b;
+} 
+
+.successDiv {
+  background-color: #9dda6c;
+}
+
 @media (max-width: 1000px) {
   .main {
     width: 100%;

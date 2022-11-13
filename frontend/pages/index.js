@@ -1,7 +1,6 @@
-
 import { Contract, providers, utils } from 'ethers'
 import Head from 'next/head' 
-import React, {useState, useRef, useState} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import Web3Modal from "web3modal"
 // import {abi, NFT_CONTRACT_ADDRESS} from ".../constants"
 import styles from "../styles/Home.module.css"
@@ -12,10 +11,11 @@ export default function Home() {
   const [presaleEnded, setPresaleEnded] = useState(false) 
   const [loading, setLoading] = useState(false) 
   const [error, setError] = useState(false)  
+  const [success, setSuccess] = useState(false)  
   const [isOwner, setIsOwner] = useState(false) // Checks if the connected wallet is the owner of the contract
   const [tokenIdsMinted, setTokenIdsMinted] = useState("0") // Checks number of token Ids minted 
-  const web3ModalRef = useRef() 
 
+  const web3ModalRef = useRef() 
 
   const errorDiv = (message) => {
     return (
@@ -25,9 +25,37 @@ export default function Home() {
     )
   }
 
+  const successDiv = (message) => {
+    return (
+      <div className={styles.successDiv}>
+        {message}
+      </div>
+    )
+  }
+
+  const connectWallet = async () => {
+    try {
+      await getProviderOrSigner(true) 
+      setWalletConnected(true)
+      setSuccess(true)
+      successDiv("Wallet connected successfully")
+    } catch (error) {
+      setError(true)
+      errorDiv(error)
+      console.error(error)
+    }
+  }
+
+
 
   const getProviderOrSigner = async (needSigner = false) => {
-    const provider = await web3ModalRef.current.connect()
+    web3ModalRef.current = new Web3Modal({
+      network: "goerli", 
+      providerOptions: {}, 
+      disableInjectedProvider: false
+    }); 
+
+    const provider = await web3ModalRef.current.connect();
     const web3Provider = new providers.Web3Provider(provider) 
 
     const { chainId } = await web3Provider.getNetwork() 
@@ -45,7 +73,7 @@ export default function Home() {
     return web3Provider; 
   }
 
-
+   
   const renderButton = () => {
     if (!walletConnected) {
       return (
@@ -55,6 +83,19 @@ export default function Home() {
       )
     }
   }
+
+  // useEffect( () => {
+  //   if (!walletConnected) {
+  //     web3ModalRef.current = new Web3Modal({
+  //       network: "goerli", 
+  //       providerOptions: {}, 
+  //       disableInjectedProvider: false
+  //     }); 
+  //     connectWallet(); 
+
+
+  //   } 
+  // })
 
   return (
     <div>
@@ -76,7 +117,12 @@ export default function Home() {
             {renderButton()}
             {
               error && (
-                errorDiv
+                errorDiv("Sorry an error occured!")
+              )
+            }
+            {
+              success && (
+                successDiv("Success!")
               )
             }
           </div>
