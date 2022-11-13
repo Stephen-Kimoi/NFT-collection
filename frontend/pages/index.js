@@ -11,14 +11,40 @@ export default function Home() {
   const [presaleStarted, setPresaleStarted] = useState(false) 
   const [presaleEnded, setPresaleEnded] = useState(false) 
   const [loading, setLoading] = useState(false) 
+  const [error, setError] = useState(false)  
   const [isOwner, setIsOwner] = useState(false) // Checks if the connected wallet is the owner of the contract
   const [tokenIdsMinted, setTokenIdsMinted] = useState("0") // Checks number of token Ids minted 
   const web3ModalRef = useRef() 
 
 
-  const getProviderOrSigner = async (needSigner = false) => {
-    const provider 
+  const errorDiv = (message) => {
+    return (
+      <div className={styles.errorDiv}>
+        {message}
+      </div>
+    )
   }
+
+
+  const getProviderOrSigner = async (needSigner = false) => {
+    const provider = await web3ModalRef.current.connect()
+    const web3Provider = new providers.Web3Provider(provider) 
+
+    const { chainId } = await web3Provider.getNetwork() 
+    if (chainId !== 5) {
+      setError(true)
+      errorDiv("Change network to Goerli")
+      throw new Error("Change network to Goerli");
+    }
+
+    if (needSigner) {
+      const signer = web3Provider.getSigner()
+      return signer
+    }
+
+    return web3Provider; 
+  }
+
 
   const renderButton = () => {
     if (!walletConnected) {
@@ -48,6 +74,11 @@ export default function Home() {
               {tokenIdsMinted}/20 have been minted
             </div>
             {renderButton()}
+            {
+              error && (
+                errorDiv
+              )
+            }
           </div>
           <div>
             <img className={styles.image} src="./cryptodevs/0.svg" />
