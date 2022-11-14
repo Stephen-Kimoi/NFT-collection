@@ -25,6 +25,8 @@ export default function Home() {
     )
   }
 
+
+
   const successDiv = (message) => {
     return (
       <div className={styles.successDiv}>
@@ -79,6 +81,54 @@ export default function Home() {
       return (
         <button onClick={connectWallet} className={styles.button}>
           Connect your wallet
+        </button>
+      )
+    }
+
+    if (loading) {
+      return (
+        <button className={styles.button}>
+          Loading...
+        </button>
+      )
+    }
+
+    if (isOwner && !presaleStarted) {
+      return (
+        <button className={styles.button} onClick={startPresale}>
+          Start presale! 
+        </button>
+      )
+    }
+
+    if (!presaleStarted) {
+      return (
+        <div>
+          <div className={styles.description}>
+            Presale hasn't started yet
+          </div>
+        </div>
+      )
+    }
+
+    if (presaleStarted && !presaleEnded){
+      return (
+        <div>
+          <div className={styles.description}>
+            Presale has started!!! If your address is whitelisted, Mint a Crypto
+            Dev 🥳
+          </div>
+          <button className={styles.button} onClick={presaleMint}>
+            Presale Mint 🚀
+          </button>
+        </div>
+      )
+    }
+
+    if (presaleStarted && presaleEnded) {
+      return (
+        <button className={styles.button} onClick={publicMint}>
+          Public Mint 🚀
         </button>
       )
     }
