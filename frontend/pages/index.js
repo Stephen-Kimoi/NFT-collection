@@ -2,7 +2,8 @@ import { Contract, providers, utils } from 'ethers'
 import Head from 'next/head' 
 import React, {useState, useRef, useEffect} from 'react'
 import Web3Modal from "web3modal"
-// import {abi, NFT_CONTRACT_ADDRESS} from ".../constants"
+import { abi } from "../utils/CryptoDevs.json"
+import { NFT_CONTRACT_ADDRESS } from "../constants"
 import styles from "../styles/Home.module.css"
 
 export default function Home() {
@@ -25,7 +26,24 @@ export default function Home() {
     )
   }
 
-
+  const presaleMint = async () => {
+    try {
+      const signer = await getProviderOrSigner(true) 
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer) 
+      const tx = await nftContract.presaleMint({
+        value: utils.parseEther("0.01"), 
+      })
+      setLoading(true)
+      await tx.wait() 
+      setLoading(false) 
+      success(true) 
+      successDiv("You have successfully minted Steve's NFTs")
+    } catch (error) {
+      error(true) 
+      errorDiv("Sorry an error occured")
+      console.error(error)
+    }
+  }
 
   const successDiv = (message) => {
     return (
@@ -48,6 +66,62 @@ export default function Home() {
     }
   }
 
+  const checkIfPresaleStarted = async () => {
+    try {
+      const provider = await getProviderOrSigner() 
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider) 
+
+      const _presaleStarted = await nftContract.presaleStarted();  
+      if (!_presaleStarted) {
+        await getOwner()
+      }
+      setPresaleStarted(_presaleStarted); 
+      return _presaleStarted
+    } catch (error) {
+      console.error(error) 
+      setError(true) 
+      return false; 
+    }
+  
+  }
+
+  const getOwner = async () => {
+    try {
+      const provider = await getProviderOrSigner() 
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider)
+
+      const _owner = nftContract.owner() 
+
+      const signer = await getProviderOrSigner(true) 
+      const address = await signer.getAddress() 
+      
+      if (address.toLowerCase() === _owner.toLowerCase()){
+        setIsOwner(true) 
+      }
+    } catch (error) {
+      console.error(error) 
+      setError(true) 
+    }
+  }
+
+  const startPresale = async () => {
+    try {
+      const signer = await getProviderOrSigner(true)
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer) 
+
+      const tx = await nftContract.startPresale() 
+      setLoading(true) 
+
+      await tx.wait() 
+      setLoading(false) 
+      success(true)
+      
+      await checkIfPresaleStarted() 
+    } catch (error) {
+      console.error(error)
+      error(true)
+    }
+  }
 
 
   const getProviderOrSigner = async (needSigner = false) => {
@@ -57,8 +131,12 @@ export default function Home() {
       disableInjectedProvider: false
     }); 
 
+    setLoading(true)
+
     const provider = await web3ModalRef.current.connect();
     const web3Provider = new providers.Web3Provider(provider) 
+
+    setLoading(false)
 
     const { chainId } = await web3Provider.getNetwork() 
     if (chainId !== 5) {
@@ -134,18 +212,10 @@ export default function Home() {
     }
   }
 
-  // useEffect( () => {
-  //   if (!walletConnected) {
-  //     web3ModalRef.current = new Web3Modal({
-  //       network: "goerli", 
-  //       providerOptions: {}, 
-  //       disableInjectedProvider: false
-  //     }); 
-  //     connectWallet(); 
+  useEffect( () => {
+    checkIfPresaleStarted() 
 
-
-  //   } 
-  // })
+  }, [walletConnected])
 
   return (
     <div>
