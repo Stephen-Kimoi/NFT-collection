@@ -17,7 +17,8 @@ export default function Home() {
   const [tokenIdsMinted, setTokenIdsMinted] = useState("0") // Checks number of token Ids minted 
 
   const web3ModalRef = useRef() 
-
+  
+  // Error div
   const errorDiv = (message) => {
     return (
       <div className={styles.errorDiv}>
@@ -25,7 +26,17 @@ export default function Home() {
       </div>
     )
   }
-
+  
+  // Success div
+  const successDiv = (message) => {
+    return (
+      <div className={styles.successDiv}>
+        {message}
+      </div>
+    )
+  }
+  
+  // Minting an NFT during presale
   const presaleMint = async () => {
     try {
       const signer = await getProviderOrSigner(true) 
@@ -45,14 +56,15 @@ export default function Home() {
     }
   }
 
-  const successDiv = (message) => {
-    return (
-      <div className={styles.successDiv}>
-        {message}
-      </div>
-    )
+  // Mint an NFT after presale has ended
+  const publicMint = async () => {
+    try {
+      const
+    }
   }
 
+  
+  // Connect metamask wallet
   const connectWallet = async () => {
     try {
       await getProviderOrSigner(true) 
@@ -65,7 +77,8 @@ export default function Home() {
       console.error(error)
     }
   }
-
+  
+  // CHecking if the presale has started
   const checkIfPresaleStarted = async () => {
     try {
       const provider = await getProviderOrSigner() 
@@ -85,8 +98,32 @@ export default function Home() {
   
   }
 
+  // Checking if the presale has ended
+  const checkIfPresaleEnded = async () => {
+    try {
+      const provider = await getProviderOrSigner() 
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider) 
+      
+      const _presaleEnded = await nftContract.presaleEnded() 
+      const hasEnded = _presaleEnded.lt(Math.floor(Date.now() / 1000))
+
+      if (hasEnded) {
+        setPresaleEnded(true)
+      } else {
+        setPresaleEnded(false)
+      }
+      return hasEnded
+    } catch (error) {
+      console.error(error) 
+      setError(true)
+      return false
+    }
+  } 
+  
+  // Getting the owner of the contract
   const getOwner = async () => {
     try {
+
       const provider = await getProviderOrSigner() 
       const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider)
 
@@ -95,15 +132,19 @@ export default function Home() {
       const signer = await getProviderOrSigner(true) 
       const address = await signer.getAddress() 
       
-      if (address.toLowerCase() === _owner.toLowerCase()){
+      if (address === _owner){
         setIsOwner(true) 
       }
+
     } catch (error) {
+
       console.error(error) 
       setError(true) 
+
     }
   }
-
+  
+  // Starts the presale for the NFT collection
   const startPresale = async () => {
     try {
       const signer = await getProviderOrSigner(true)
@@ -123,8 +164,9 @@ export default function Home() {
     }
   }
 
-
+  // Getting the provider or signer
   const getProviderOrSigner = async (needSigner = false) => {
+
     web3ModalRef.current = new Web3Modal({
       network: "goerli", 
       providerOptions: {}, 
@@ -171,6 +213,7 @@ export default function Home() {
       )
     }
 
+    // ***isOwner isnt working 
     if (isOwner && !presaleStarted) {
       return (
         <button className={styles.button} onClick={startPresale}>
@@ -213,7 +256,26 @@ export default function Home() {
   }
 
   useEffect( () => {
-    checkIfPresaleStarted() 
+    // Check if presale has started or ended
+    const _presaleStarted = checkIfPresaleStarted() 
+    if (_presaleStarted) {
+      checkIfPresaleEnded()
+    }
+
+    // ****Get token ids minted function
+
+    // Interval that gets called every 5 seconds to check if presale ended 
+    const presaleEndedInterval = setTimeout(async () => {
+      const _presaleStarted = await checkIfPresaleStarted() 
+      if (_presaleStarted) {
+        const _presaleEnded = await checkIfPresaleEnded() 
+        if (_presaleEnded) {
+          clearInterval(presaleEndedInterval)
+        }
+      } 
+    }, 5 * 1000)
+
+
 
   }, [walletConnected])
 
