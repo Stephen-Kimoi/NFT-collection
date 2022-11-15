@@ -21,18 +21,22 @@ export default function Home() {
   // Error div
   const errorDiv = (message) => {
     return (
-      <div className={styles.errorDiv}>
-        {message}
-      </div>
+      error && ( 
+        <div className={styles.errorDiv}>
+          {message}
+        </div>
+      )
     )
   }
   
   // Success div
   const successDiv = (message) => {
     return (
-      <div className={styles.successDiv}>
-        {message}
-      </div>
+      success && (
+        <div className={styles.successDiv}>
+          {message}
+        </div>
+      )
     )
   }
   
@@ -47,11 +51,14 @@ export default function Home() {
       setLoading(true)
       await tx.wait() 
       setLoading(false) 
-      success(true) 
+      setSuccess(true) 
       successDiv("You have successfully minted Steve's NFTs")
+      setTimeout(() => {
+        setSuccess(false)
+      }, 3000)
     } catch (error) {
-      error(true) 
-      errorDiv("Sorry an error occured")
+      setError(true) 
+      errorDiv("Sorry couldn't ")
       console.error(error)
     }
   }
@@ -59,7 +66,25 @@ export default function Home() {
   // Mint an NFT after presale has ended
   const publicMint = async () => {
     try {
-      const
+      const signer = await getProviderOrSigner(true) 
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer) 
+
+      const tx = await nftContract.mint({
+        value: utils.parseEther("0.01")
+      })
+
+      setLoading(true) 
+      await tx.wait() 
+      setLoading(false) 
+      setSuccess(true)  
+      successDiv("Successfully minted an NFT!") 
+      setTimeout(() => {
+        setSuccess(false)
+      }, 3000)
+
+    } catch (error) {
+      console.error(error) 
+      setError(true) 
     }
   }
 
@@ -71,6 +96,9 @@ export default function Home() {
       setWalletConnected(true)
       setSuccess(true)
       successDiv("Wallet connected successfully")
+      setTimeout(() => {
+        setSuccess(false)
+      }, 3000)
     } catch (error) {
       setError(true)
       errorDiv(error)
@@ -143,6 +171,20 @@ export default function Home() {
 
     }
   }
+
+  // Getting the number of token Ids minted 
+  const getTokenIdsMinted = async () => { 
+    try {
+      const provider = await getProviderOrSigner() 
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider) 
+
+      const _tokenIds = await nftContract.tokenIds() 
+      setTokenIdsMinted(_tokenIds.toString())
+    } catch (error) {
+      console.error(error) 
+      setError(true) 
+    }
+  }
   
   // Starts the presale for the NFT collection
   const startPresale = async () => {
@@ -155,7 +197,11 @@ export default function Home() {
 
       await tx.wait() 
       setLoading(false) 
-      success(true)
+      setSuccess(true)
+      successDiv("Presale successfully started!") 
+      setTimeout(() => {
+        setSuccess(false)
+      }, 3000)
       
       await checkIfPresaleStarted() 
     } catch (error) {
@@ -214,7 +260,7 @@ export default function Home() {
     }
 
     // ***isOwner isnt working 
-    if (isOwner && !presaleStarted) {
+    if (!presaleStarted) {
       return (
         <button className={styles.button} onClick={startPresale}>
           Start presale! 
@@ -262,7 +308,7 @@ export default function Home() {
       checkIfPresaleEnded()
     }
 
-    // ****Get token ids minted function
+    getTokenIdsMinted()
 
     // Interval that gets called every 5 seconds to check if presale ended 
     const presaleEndedInterval = setTimeout(async () => {
@@ -273,6 +319,11 @@ export default function Home() {
           clearInterval(presaleEndedInterval)
         }
       } 
+    }, 5 * 1000)
+
+    // Get numbers of token Ids minted after 5 seconds 
+    setInterval( async () => {
+      await getTokenIdsMinted()
     }, 5 * 1000)
 
 
@@ -299,12 +350,12 @@ export default function Home() {
             {renderButton()}
             {
               error && (
-                errorDiv("Sorry an error occured!")
+                errorDiv()
               )
             }
             {
               success && (
-                successDiv("Success!")
+                successDiv()
               )
             }
           </div>
