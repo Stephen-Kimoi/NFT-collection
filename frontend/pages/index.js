@@ -15,6 +15,7 @@ export default function Home() {
   const [success, setSuccess] = useState(false)  
   const [isOwner, setIsOwner] = useState(false) // Checks if the connected wallet is the owner of the contract
   const [tokenIdsMinted, setTokenIdsMinted] = useState("0") // Checks number of token Ids minted 
+  const [nftNumber, setNftNumber] = useState(0)
 
   const web3ModalRef = useRef() 
   
@@ -241,7 +242,11 @@ export default function Home() {
     return web3Provider; 
   }
 
-   
+  const changeNft = () => {
+    setNftNumber(prevNumber => prevNumber + 1)
+  }
+
+  // Render button 
   const renderButton = () => {
     if (!walletConnected) {
       return (
@@ -260,7 +265,7 @@ export default function Home() {
     }
 
     // ***isOwner isnt working 
-    if (!presaleStarted) {
+    if (isOwner && !presaleStarted) {
       return (
         <button className={styles.button} onClick={startPresale}>
           Start presale! 
@@ -339,30 +344,38 @@ export default function Home() {
       </Head>
 
       <div className={styles.main}>
-        <div>
-          <h1 className={styles.title}>Welcome to Steve's NFTs</h1>
-            <div className={styles.description}>
-                This is my NFT collection
-            </div>
-            <div className={styles.description}>
-              {tokenIdsMinted}/20 have been minted
-            </div>
+
+        <div className={styles.mainContainer}>
+          <h1 className={styles.title}>Steve's NFTs</h1>
+          <div className={styles.description}>
+              This is my NFT collection
+          </div>
+          <div className={styles.description}>
+            {tokenIdsMinted}/20 have been minted
+          </div>
             {renderButton()}
             {
               error && (
-                errorDiv()
+                errorDiv("An error occured!")
               )
             }
             {
               success && (
-                successDiv()
+                successDiv("Success!")
               )
             }
-          </div>
-          <div>
-            <img className={styles.image} src="./cryptodevs/0.svg" />
-          </div>
         </div>
+
+        {
+          walletConnected && (
+            <div className={styles.imageContainer}>
+              <img className={styles.image} src={`./${nftNumber}.svg`} />
+              <button onClick={changeNft}>Change NFT</button>
+            </div>
+          )
+        }
+
+      </div>
       </div>
   )
 
