@@ -70,6 +70,7 @@ export default function Home() {
   // Mint an NFT after presale has ended
   const publicMint = async () => {
     try {
+      setLoading(true) 
       const signer = await getProviderOrSigner(true) 
       const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer) 
 
@@ -77,15 +78,14 @@ export default function Home() {
         value: utils.parseEther("0.01")
       })
 
-      setLoading(true) 
       await tx.wait() 
-      setLoading(false) 
       setSuccess(true)  
       successDiv("Successfully minted an NFT!") 
       setTimeout(() => {
         setSuccess(false)
       }, 3000)
-
+      setLoading(false) 
+      
     } catch (error) {
       setError(true) 
       console.error(error) 
