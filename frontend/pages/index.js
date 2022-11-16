@@ -61,6 +61,9 @@ export default function Home() {
       setError(true) 
       errorDiv("Sorry couldn't ")
       console.error(error)
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
     }
   }
 
@@ -84,8 +87,11 @@ export default function Home() {
       }, 3000)
 
     } catch (error) {
-      console.error(error) 
       setError(true) 
+      console.error(error) 
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
     }
   }
 
@@ -104,6 +110,9 @@ export default function Home() {
       setError(true)
       errorDiv(error)
       console.error(error)
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
     }
   }
   
@@ -120,8 +129,11 @@ export default function Home() {
       setPresaleStarted(_presaleStarted); 
       return _presaleStarted
     } catch (error) {
-      console.error(error) 
       setError(true) 
+      console.error(error) 
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
       return false; 
     }
   
@@ -143,8 +155,11 @@ export default function Home() {
       }
       return hasEnded
     } catch (error) {
-      console.error(error) 
       setError(true)
+      console.error(error) 
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
       return false
     }
   } 
@@ -166,10 +181,11 @@ export default function Home() {
       }
 
     } catch (error) {
-
-      console.error(error) 
-      setError(true) 
-
+      setError(true)
+      console.error(error)  
+      setTimeout(() => {
+        setError(false)
+      })
     }
   }
 
@@ -184,6 +200,9 @@ export default function Home() {
     } catch (error) {
       console.error(error) 
       setError(true) 
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
     }
   }
   
@@ -207,7 +226,10 @@ export default function Home() {
       await checkIfPresaleStarted() 
     } catch (error) {
       console.error(error)
-      error(true)
+      setError(true)
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
     }
   }
 
@@ -230,7 +252,9 @@ export default function Home() {
     const { chainId } = await web3Provider.getNetwork() 
     if (chainId !== 5) {
       setError(true)
-      errorDiv("Change network to Goerli")
+      setTimeout(() => {
+        setError(false)
+      }, 3000)
       throw new Error("Change network to Goerli");
     }
 
@@ -344,36 +368,41 @@ export default function Home() {
       </Head>
 
       <div className={styles.main}>
-
+        
         <div className={styles.mainContainer}>
-          <h1 className={styles.title}>Steve's NFTs</h1>
-          <div className={styles.description}>
-              This is my NFT collection
-          </div>
-          <div className={styles.description}>
-            {tokenIdsMinted}/20 have been minted
-          </div>
-            {renderButton()}
-            {
-              error && (
-                errorDiv("An error occured!")
-              )
-            }
-            {
-              success && (
-                successDiv("Success!")
-              )
-            }
-        </div>
 
-        {
-          walletConnected && (
-            <div className={styles.imageContainer}>
-              <img className={styles.image} src={`./${nftNumber}.svg`} />
-              <button onClick={changeNft}>Change NFT</button>
+          <div className={styles.contentContainer}>
+            <h1 className={styles.title}>Steve's NFTs</h1>
+            <img className={styles.openingImage} src="./opening.svg" />
+            <div className={styles.description}>
+                This is my NFT collection
             </div>
-          )
-        }
+            <div className={styles.description}>
+              {tokenIdsMinted}/20 have been minted
+            </div>
+              {renderButton()}
+              {
+                error && (
+                  errorDiv("Opps! An error occured! Kindly refresh your page")
+                )
+              }
+              {
+                success && (
+                  successDiv("Success!")
+                )
+              }
+          </div>
+
+          {
+            walletConnected && (
+              <div className={styles.imageContainer}>
+                <img className={styles.image} src={`./${nftNumber}.svg`} />
+                <button onClick={changeNft}>Change NFT</button>
+              </div>
+            )
+          }
+
+        </div>
 
       </div>
       </div>
