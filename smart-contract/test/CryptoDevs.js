@@ -17,9 +17,12 @@ describe("Cryto Devs", function() {
     return { deployedContract, owner, address1}
   }; 
 
+  it("Owner of the contract must be equal to the deployer", async () => {
+    const { deployedContract, owner } = await loadFixture(deployedCryptoDevs); 
+    expect(await deployedContract.owner()).to.equal(await owner.address); 
+  });  
 
-
-
+  
 
   
 })
