@@ -22,7 +22,11 @@ describe("Cryto Devs", function() {
     expect(await deployedContract.owner()).to.equal(await owner.address); 
   });  
 
-  
+  it("Presale should be trues", async() => {
+    const { deployedContract } = await loadFixture(deployedCryptoDevs); 
+    await deployedContract.startPresale(); 
 
-  
+    expect(await deployedContract.presaleStarted()).to.equal(true); 
+  }); 
+
 })
