@@ -1,0 +1,25 @@
+const { ethers } = require("hardhat"); 
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers"); 
+const { time } = require("@openzeppelin/test-helpers"); 
+const { expect } = require("chai"); 
+const Web3 = require("web3");  
+
+describe("Cryto Devs", function() {
+  async function deployedCryptoDevs() {
+    const [owner, address1] = await ethers.getSigners(); 
+    const web3 = new Web3(Web3.givenProvider); 
+    const addr = web3.utils.toChecksumAddress("0xd9145CCE52D386f254917e481eB44e9943F39138"); 
+    const cryptoFactory = await ethers.getContractFactory("CryptoDevs"); 
+    const deployedContract = await cryptoFactory.deploy("https://steves-nft-collection.vercel.app/api/", addr); 
+
+    await deployedContract.deployed(); 
+
+    return { deployedContract, owner, address1}
+  }; 
+
+
+
+
+
+  
+})
