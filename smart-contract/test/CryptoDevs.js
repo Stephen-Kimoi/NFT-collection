@@ -29,4 +29,12 @@ describe("Cryto Devs", function() {
     expect(await deployedContract.presaleStarted()).to.equal(true); 
   }); 
 
+  // This test is not passing
+  it("Should return the base token URI", async() => {
+    const { deployedContract } = await loadFixture(deployedCryptoDevs); 
+    expect(await deployedContract.baseURI()).to.equal("https://steves-nft-collection.vercel.app/api/"); 
+  }); 
+
+ 
+
 })
