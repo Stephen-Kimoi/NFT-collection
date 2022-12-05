@@ -44,6 +44,13 @@ describe("Cryto Devs", function() {
     expect( await deployedContract.presaleEnded()).to.equal(1670231946); 
   }); 
   
-
+  // This test is not passing
+  it("Token must be equal to one", async() => {
+    const { deployedContract } = await loadFixture(deployedCryptoDevs); 
+    await deployedContract.startPresale(); 
+    await deployedContract.presaleMint(); 
+     
+    expect(await deployedContract.tokenIds()).to.equal(1); 
+  }); 
 
 })
