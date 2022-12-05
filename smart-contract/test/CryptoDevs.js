@@ -35,6 +35,15 @@ describe("Cryto Devs", function() {
     expect(await deployedContract.baseURI()).to.equal("https://steves-nft-collection.vercel.app/api/"); 
   }); 
 
- 
+  // This test is not passing
+  it("Presale ended time should be +5 minutes", async() => {
+    const { deployedContract } = await loadFixture(deployedCryptoDevs); 
+    await deployedContract.startPresale(); 
+
+    // await time.increase(time.duration.minutes(5)); 
+    expect( await deployedContract.presaleEnded()).to.equal(1670231946); 
+  }); 
+  
+
 
 })
