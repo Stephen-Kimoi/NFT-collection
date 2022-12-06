@@ -43,41 +43,15 @@ export default function Home() {
 
   // Connect wallet
   const connectWallet = async() => {
-
     try {
-      console.log("Connecting wallet..."); 
+      const { ethereum } = window; 
+      const accounts = await ethereum.request({method: "eth_requestAccounts"}); 
+      console.log("Connected: ", accounts[0]); 
 
-      web3ModalRef.current = new Web3Modal({
-        network: "goerli", 
-        providerOptions: {}, 
-        disableInjectedProvider: false
-      });
-  
-      const provider = await web3ModalRef.current.connect(); 
-      const web3Provider = new providers.Web3Provider(provider);
-      
-      setLoading(false)
-
-      const { chainId } = await web3Provider.getNetwork() 
-      if (chainId !== 5) {
-        setError(true)
-        setTimeout(() => {
-          setError(false)
-        }, 3000)
-        throw new Error("Change network to Goerli");
-      }
-
-      // if (needSigner) {
-      //   const signer = web3Provider.getSigner()
-      //   return signer
-      // }
-
-      const signer = web3Provider.getSigner(); 
-
-      return { web3Provider, signer}; 
-
-    } catch(error) {
+      setSuccess(true); 
+    } catch (error) {
       console.error(error); 
+      setError(true); 
     }
   }
 
