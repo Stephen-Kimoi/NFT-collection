@@ -19,8 +19,8 @@ export default function Home() {
 
   const web3ModalRef = useRef() 
   
-  // Error div
-  const errorDiv = (message) => {
+   // Error div
+   const errorDiv = (message) => {
     return (
       error && ( 
         <div className={styles.errorDiv}>
@@ -40,236 +40,48 @@ export default function Home() {
       )
     )
   }
+
+  // Connect wallet
+  const connectWallet = async() => {
+
+    try {
+      console.log("Connecting wallet..."); 
+
+      web3ModalRef.current = new Web3Modal({
+        network: "goerli", 
+        providerOptions: {}, 
+        disableInjectedProvider: false
+      });
   
-  // Minting an NFT during presale
-  const presaleMint = async () => {
-    try {
-      const signer = await getProviderOrSigner(true) 
-      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer) 
-      const tx = await nftContract.presaleMint({
-        value: utils.parseEther("0.01"), 
-      })
-      setLoading(true)
-      await tx.wait() 
-      setLoading(false) 
-      setSuccess(true) 
-      successDiv("You have successfully minted Steve's NFTs")
-      setTimeout(() => {
-        setSuccess(false)
-      }, 3000)
-    } catch (error) {
-      setError(true) 
-      errorDiv("Sorry couldn't ")
-      console.error(error)
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-    }
-  }
-
-  // Mint an NFT after presale has ended
-  const publicMint = async () => {
-    try {
-      setLoading(true) 
-      const signer = await getProviderOrSigner(true) 
-      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer) 
-
-      const tx = await nftContract.mint({
-        value: utils.parseEther("0.01")
-      })
-
-      await tx.wait() 
-      setSuccess(true)  
-      successDiv("Successfully minted an NFT!") 
-      setTimeout(() => {
-        setSuccess(false)
-      }, 3000)
-      setLoading(false) 
+      const provider = await web3ModalRef.current.connect(); 
+      const web3Provider = new providers.Web3Provider(provider);
       
-    } catch (error) {
-      setError(true) 
-      console.error(error) 
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-    }
-  }
+      setLoading(false)
 
-  
-  // Connect metamask wallet
-  const connectWallet = async () => {
-    try {
-      await getProviderOrSigner(true) 
-      setWalletConnected(true)
-      setSuccess(true)
-      successDiv("Wallet connected successfully")
-      setTimeout(() => {
-        setSuccess(false)
-      }, 3000)
-    } catch (error) {
-      setError(true)
-      errorDiv(error)
-      console.error(error)
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-    }
-  }
-  
-  // CHecking if the presale has started
-  const checkIfPresaleStarted = async () => {
-    try {
-      const provider = await getProviderOrSigner() 
-      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider) 
-
-      const _presaleStarted = await nftContract.presaleStarted();  
-      if (!_presaleStarted) {
-        await getOwner()
-      }
-      setPresaleStarted(_presaleStarted); 
-      return _presaleStarted
-    } catch (error) {
-      setError(true) 
-      console.error(error) 
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-      return false; 
-    }
-  
-  }
-
-  // Checking if the presale has ended
-  const checkIfPresaleEnded = async () => {
-    try {
-      const provider = await getProviderOrSigner() 
-      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider) 
-      
-      const _presaleEnded = await nftContract.presaleEnded() 
-      const hasEnded = _presaleEnded.lt(Math.floor(Date.now() / 1000))
-
-      if (hasEnded) {
-        setPresaleEnded(true)
-      } else {
-        setPresaleEnded(false)
-      }
-      return hasEnded
-    } catch (error) {
-      setError(true)
-      console.error(error) 
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-      return false
-    }
-  } 
-  
-  // Getting the owner of the contract
-  const getOwner = async () => {
-    try {
-
-      const provider = await getProviderOrSigner() 
-      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider)
-
-      const _owner = nftContract.owner() 
-
-      const signer = await getProviderOrSigner(true) 
-      const address = await signer.getAddress() 
-      
-      if (address === _owner){
-        setIsOwner(true) 
+      const { chainId } = await web3Provider.getNetwork() 
+      if (chainId !== 5) {
+        setError(true)
+        setTimeout(() => {
+          setError(false)
+        }, 3000)
+        throw new Error("Change network to Goerli");
       }
 
-    } catch (error) {
-      setError(true)
-      console.error(error)  
-      setTimeout(() => {
-        setError(false)
-      })
+      // if (needSigner) {
+      //   const signer = web3Provider.getSigner()
+      //   return signer
+      // }
+
+      const signer = web3Provider.getSigner(); 
+
+      return { web3Provider, signer}; 
+
+    } catch(error) {
+      console.error(error); 
     }
   }
 
-  // Getting the number of token Ids minted 
-  const getTokenIdsMinted = async () => { 
-    try {
-      const provider = await getProviderOrSigner() 
-      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider) 
-
-      const _tokenIds = await nftContract.tokenIds() 
-      setTokenIdsMinted(_tokenIds.toString())
-    } catch (error) {
-      console.error(error) 
-      setError(true) 
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-    }
-  }
   
-  // Starts the presale for the NFT collection
-  const startPresale = async () => {
-    try {
-      const signer = await getProviderOrSigner(true)
-      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer) 
-
-      const tx = await nftContract.startPresale() 
-      setLoading(true) 
-
-      await tx.wait() 
-      setLoading(false) 
-      setSuccess(true)
-      successDiv("Presale successfully started!") 
-      setTimeout(() => {
-        setSuccess(false)
-      }, 3000)
-      
-      await checkIfPresaleStarted() 
-    } catch (error) {
-      console.error(error)
-      setError(true)
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-    }
-  }
-
-  // Getting the provider or signer
-  const getProviderOrSigner = async (needSigner = false) => {
-
-    web3ModalRef.current = new Web3Modal({
-      network: "goerli", 
-      providerOptions: {}, 
-      disableInjectedProvider: false
-    }); 
-
-    setLoading(true)
-
-    const provider = await web3ModalRef.current.connect();
-    const web3Provider = new providers.Web3Provider(provider) 
-
-    setLoading(false)
-
-    const { chainId } = await web3Provider.getNetwork() 
-    if (chainId !== 5) {
-      setError(true)
-      setTimeout(() => {
-        setError(false)
-      }, 3000)
-      throw new Error("Change network to Goerli");
-    }
-
-    if (needSigner) {
-      const signer = web3Provider.getSigner()
-      return signer
-    }
-
-    return web3Provider; 
-  }
-
-  const changeNft = () => {
-    setNftNumber(prevNumber => prevNumber + 1)
-  }
-
   // Render button 
   const renderButton = () => {
     if (!walletConnected) {
@@ -279,85 +91,8 @@ export default function Home() {
         </button>
       )
     }
-
-    if (loading) {
-      return (
-        <button className={styles.button}>
-          Loading...
-        </button>
-      )
-    }
-
-    // ***isOwner isnt working 
-    if (isOwner && !presaleStarted) {
-      return (
-        <button className={styles.button} onClick={startPresale}>
-          Start presale! 
-        </button>
-      )
-    }
-
-    if (!presaleStarted) {
-      return (
-        <div>
-          <div className={styles.description}>
-            Presale hasn't started yet
-          </div>
-        </div>
-      )
-    }
-
-    if (presaleStarted && !presaleEnded){
-      return (
-        <div>
-          <div className={styles.description}>
-            Presale has started!!! If your address is whitelisted, Mint a Crypto
-            Dev 🥳
-          </div>
-          <button className={styles.button} onClick={presaleMint}>
-            Presale Mint 🚀
-          </button>
-        </div>
-      )
-    }
-
-    if (presaleStarted && presaleEnded) {
-      return (
-        <button className={styles.button} onClick={publicMint}>
-          Public Mint 🚀
-        </button>
-      )
-    }
   }
 
-  useEffect( () => {
-    // Check if presale has started or ended
-    const _presaleStarted = checkIfPresaleStarted() 
-    if (_presaleStarted) {
-      checkIfPresaleEnded()
-    }
-
-    getTokenIdsMinted()
-
-    // Interval that gets called every 5 seconds to check if presale ended 
-    const presaleEndedInterval = setTimeout(async () => {
-      const _presaleStarted = await checkIfPresaleStarted() 
-      if (_presaleStarted) {
-        const _presaleEnded = await checkIfPresaleEnded() 
-        if (_presaleEnded) {
-          clearInterval(presaleEndedInterval)
-        }
-      } 
-    }, 5 * 1000)
-
-    // Get numbers of token Ids minted after 5 seconds 
-    setInterval( async () => {
-      await getTokenIdsMinted()
-    }, 5 * 1000)
-
-
-
-  }, [walletConnected])
 
   return (
     <div>
