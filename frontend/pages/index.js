@@ -1,4 +1,4 @@
-import { Contract, providers, utils } from 'ethers'
+import { Contract, ethers, provider, utils } from 'ethers'
 import Head from 'next/head' 
 import React, {useState, useRef, useEffect} from 'react'
 import Web3Modal from "web3modal"
@@ -48,17 +48,18 @@ export default function Home() {
     try {
       const { ethereum } = window; 
       const accounts = await ethereum.request({method: "eth_requestAccounts"}); 
-      console.log("Connected: ", accounts[0]); 
 
-      const chainId = await web3.eth.net.getId();
+      const chainId = await ethereum.chainId; 
       
       if(chainId !== 5) {
-        setGoerliNetwork(false); 
+        setGoerliNetwork(true); 
         console.log("Kindly switch your network to Goerli testnet"); 
       }
 
       setSuccess(true); 
       setWalletConnected(true); 
+
+      return accounts[0]; 
     } catch (error) {
       console.error(error); 
       setError(true); 
@@ -74,9 +75,27 @@ export default function Home() {
       console.log("Metamask is installed!"); 
     }
 
-    console.log("Use effect runs!")
-
   })
+
+  // Get provider or signer 
+  const getProviderOrSigner = (needSigner) => {
+    const { ethereum } = window; 
+    let provider; 
+    let signer; 
+
+    if(ethereum){
+      provider = new ethers.providers.Web3Provider(ethereum); 
+      if(needSigner){
+        signer = provider.getSigner(); 
+        return signer; 
+      } else {
+        return provider; 
+      }
+    } 
+
+  }
+
+
 
   
   // Render button 
@@ -98,6 +117,17 @@ export default function Home() {
         <button onClick={connectWallet} className={styles.button}>
           Connect your wallet
         </button>
+      )
+    } 
+
+    if (!goerliNetwork) {
+      return (
+        <div className={styles.errorDiv}>
+          <p>
+            Warning! Kindly switch to Goerli network in order to continue using the application<br/> 
+            Check it out over <a href="https://blog.cryptostars.is/goerli-g%C3%B6rli-testnet-network-to-metamask-and-receiving-test-ethereum-in-less-than-2-min-de13e6fe5677" target="_blank" className={styles.errorMsg}>here</a>
+          </p>
+        </div>
       )
     }
   }
@@ -136,12 +166,12 @@ export default function Home() {
                 )
               }
           </div>
-
+           
           {
             walletConnected && (
               <div className={styles.imageContainer}>
                 <img className={styles.image} src={`./${nftNumber}.svg`} />
-                <button onClick={changeNft}>Change NFT</button>
+                <button onClick={startProvider}>Get provider</button>
               </div>
             )
           }
