@@ -50,10 +50,11 @@ export default function Home() {
       const accounts = await ethereum.request({method: "eth_requestAccounts"}); 
       console.log("Connected: ", accounts[0]); 
 
-
-      if(!ethereum){
-        setMetamaskInstalled(false); 
-        console.log("Make sure you have metamask installed!"); 
+      const chainId = await web3.eth.net.getId();
+      
+      if(chainId !== 5) {
+        setGoerliNetwork(false); 
+        console.log("Kindly switch your network to Goerli testnet"); 
       }
 
       setSuccess(true); 
@@ -64,16 +65,22 @@ export default function Home() {
     }
   }
 
+   // Use effect 
+   useEffect(() => {
+    const { ethereum } = window; 
+    
+    if(ethereum){
+      setMetamaskInstalled(true); 
+      console.log("Metamask is installed!"); 
+    }
+
+    console.log("Use effect runs!")
+
+  })
+
   
   // Render button 
   const renderButton = () => {
-    if (!walletConnected) {
-      return (
-        <button onClick={connectWallet} className={styles.button}>
-          Connect your wallet
-        </button>
-      )
-    }
 
     if(!metamaskInstalled){
       return (
@@ -83,6 +90,14 @@ export default function Home() {
             Check it out over <a href="https://metamask.io/" target="_blank" className={styles.errorMsg}>here</a>
           </p>
         </div>
+      )
+    }
+
+    if (!walletConnected) {
+      return (
+        <button onClick={connectWallet} className={styles.button}>
+          Connect your wallet
+        </button>
       )
     }
   }
