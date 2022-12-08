@@ -92,10 +92,53 @@ export default function Home() {
         return provider; 
       }
     } 
+    
+  }
+
+  // Public mint 
+  const publicMint = async() => {
+    console.log("Minting nft....")
+    try {
+      const signer = await getProviderOrSigner(true); 
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer); 
+      nftContract.startPresale(); 
+      const tx = await nftContract.mint({
+        value: utils.parseEther("0.01")
+      }); 
+      
+      await tx.wait();  
+      console.log("Done!")
+    } catch(error) {
+      
+      console.error(error); 
+      console.log("Error!")
+    }
 
   }
 
+  // Getting the owner of the smart contract
+  const getOwner = async () => {
+    console.log("Loading....."); 
+    try {
+      const signer = getProviderOrSigner(true);  
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer); 
 
+      const _owner = await nftContract.getOwner(); 
+      const address = await signer.getAddress();  
+
+
+      console.log("Owner is: ", _owner.from); 
+      console.log("Address is: ", address); 
+
+      if (_owner.from === address){
+        setIsOwner(true); 
+      }
+
+    } catch(error) {
+      console.error(error); 
+    }
+    console.log("Completed...."); 
+  }
 
   
   // Render button 
@@ -128,6 +171,22 @@ export default function Home() {
             Check it out over <a href="https://blog.cryptostars.is/goerli-g%C3%B6rli-testnet-network-to-metamask-and-receiving-test-ethereum-in-less-than-2-min-de13e6fe5677" target="_blank" className={styles.errorMsg}>here</a>
           </p>
         </div>
+      )
+    }
+
+    if(isOwner && !presaleStarted) {
+      return (
+        <button onClick={ () => console.log("Start presale...")} className={styles.button}>
+          Start the presale
+        </button>
+      )
+    }
+
+    if (true) {
+      return (
+        <button className={styles.button} onClick={publicMint}>
+          Mint 🚀
+        </button>
       )
     }
   }
@@ -171,7 +230,7 @@ export default function Home() {
             walletConnected && (
               <div className={styles.imageContainer}>
                 <img className={styles.image} src={`./${nftNumber}.svg`} />
-                <button onClick={startProvider}>Get provider</button>
+                <button onClick={getOwner}>Get owner</button>
               </div>
             )
           }
@@ -181,5 +240,4 @@ export default function Home() {
       </div>
       </div>
   )
-
 }
