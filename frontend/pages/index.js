@@ -59,6 +59,10 @@ export default function Home() {
       setSuccess(true); 
       setWalletConnected(true); 
 
+      setTimeout(() => {
+        setSuccess(false)
+      }, 3000); 
+
       return accounts[0]; 
     } catch (error) {
       console.error(error); 
